@@ -25,15 +25,29 @@ import Drawer from "@mui/material/Drawer";
 import * as React from "react";
 import PieChartWithCenterLabel from "../components/chart/chart";
 import * as Yup from "yup";
-import { Formik } from "formik";
+import { Formik, FormikHelpers } from "formik";
 import DropdownColor from "../components/organisme/DropdownColor";
 import Tabulation, { Song } from "../components/tabs/tabs";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { songs } from "./data/data";
-import Playlist from "../components/playlist/playlist";
 import PlaylistComponent from "../components/playlist/playlist";
+import {
+  createPlaylist,
+  deletePlaylist,
+  getPlaylists,
+  updatePlaylist,
+  uploadImage,
+} from "./actions/playlist";
+import { toast } from "react-toastify";
+import PlaylistForm from "../components/playlist/PlaylistForm";
+export interface Playlist {
+  id: number;
+  name: string;
+  color: string;
+  pochetteUrl: string | null;
+}
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -52,15 +66,6 @@ export default function Home() {
     setPlaylistSongs([...playlistSongs, draggedSong]);
     setIsDraggingOverPlaylist(false);
   };
-  const handleDropInPlaylistMesFichier = (
-    e: React.DragEvent<HTMLDivElement>
-  ) => {
-    e.preventDefault();
-    const index = parseInt(e.dataTransfer.getData("text/plain"));
-    const draggedSong = songsListMesFichier[index];
-    setPlaylistSongs([...playlistSongs, draggedSong]);
-    setIsDraggingOverPlaylist(false);
-  };
 
   const handleSearchChange = (event: ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
@@ -73,9 +78,127 @@ export default function Home() {
   const toggleDrawer = (newOpen: boolean) => () => {
     setOpen(newOpen);
   };
+
+  const [playlists, setPlaylists] = useState<Playlist[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedColor, setSelectedColor] = useState<string | null>(null);
+  const [pochetteUrl, setPochetteUrl] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState<number | null>(null);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+
+  React.useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const response = await getPlaylists();
+        if ("playlists" in response) {
+          setPlaylists(response.playlists);
+        } else {
+          throw new Error(response.message);
+        }
+      } catch (error) {
+        console.error(error);
+        setError("Une erreur s'est produite lors du chargement des playlists.");
+      }
+    };
+    fetchPlaylists();
+  }, []);
+
+  const handleColorSelect = (color: string) => {
+    setSelectedColor(color);
+  };
+
+  const handleFileSelected = (file: File | null) => {
+    setSelectedFile(file);
+  };
+
+  const handleCreateOrUpdatePlaylist = async (
+    values: any,
+    formikHelpers: FormikHelpers<any>
+  ) => {
+    try {
+      let imageUrl = pochetteUrl;
+      if (selectedFile) {
+        const formData = new FormData();
+        formData.append("file", selectedFile);
+        const response = await uploadImage(formData);
+        if ("url" in response) {
+          imageUrl = response.url;
+        } else {
+          console.error("Upload failed:", response.message);
+          return;
+        }
+      }
+
+      const formData = new FormData();
+      formData.append("name", values.name);
+      formData.append("color", selectedColor || "");
+      formData.append("pochetteUrl", imageUrl || "");
+
+      let response;
+      if (isEditing) {
+        formData.append("id", isEditing.toString());
+        response = await updatePlaylist(formData);
+      } else {
+        response = await createPlaylist(formData);
+      }
+
+      if ("playlist" in response) {
+        if (isEditing) {
+          setPlaylists(
+            playlists.map((p) => (p.id === isEditing ? response.playlist : p))
+          );
+          toast.success("Playlist mise à jour avec succès!");
+        } else {
+          setPlaylists([...playlists, response.playlist]);
+          toast.success("Playlist créée avec succès!");
+        }
+        setIsEditing(null);
+        setPochetteUrl(null);
+        setSelectedFile(null);
+        formikHelpers.resetForm();
+      } else {
+        throw new Error(response.message);
+      }
+    } catch (error) {
+      console.error(error);
+      setError(
+        `Une erreur s'est produite lors de ${
+          isEditing ? "la mise à jour" : "la création"
+        } de la playlist.`
+      );
+    }
+  };
+
+  const handleDeletePlaylist = async (id: number) => {
+    try {
+      const formData = new FormData();
+      formData.append("id", id.toString());
+
+      const response = await deletePlaylist(formData);
+      if (
+        (response as { success: boolean; error?: { message: string } }).success
+      ) {
+        setPlaylists(playlists.filter((p) => p.id !== id));
+      } else {
+        throw new Error(
+          (response as { error?: { message: string } }).error?.message ||
+            "Une erreur s'est produite lors de la suppression."
+        );
+      }
+    } catch (error) {
+      console.error(error);
+      setError("Une erreur s'est produite lors de la suppression.");
+    }
+  };
+
+  const handleEditPlaylist = (playlist: Playlist) => {
+    setIsEditing(playlist.id);
+    setSelectedColor(playlist.color);
+    setPochetteUrl(playlist.pochetteUrl);
+  };
+
   const initialValues = {
-    productName: "",
-    submit: null,
+    name: "",
   };
 
   const DrawerList = (
@@ -95,87 +218,16 @@ export default function Home() {
         Créer une playliste
       </Typography>
 
-      <PlaylistComponent />
-
-      <Card className="w-full p-4 pb-4 flex items-center gap-4 border-t-2">
-        <div className="w-[60%]">
-          <Formik
-            enableReinitialize
-            initialValues={initialValues}
-            validationSchema={Yup.object().shape({
-              productName: Yup.string().max(255).required("Obligatoire"),
-            })}
-            onSubmit={async (values: any) => {
-              try {
-                console.log("values", values);
-              } catch (er) {
-                console.error(er);
-              }
-            }}
-          >
-            {({
-              errors,
-              handleBlur,
-              handleChange,
-              handleSubmit,
-              touched,
-              values,
-            }) => (
-              <form className="w-full" noValidate onSubmit={handleSubmit}>
-                <Stack spacing={1}>
-                  <InputLabel>Nom de la playliste</InputLabel>
-                  <div className="flex gap-4">
-                    <OutlinedInput
-                      className={`font-poppins ${
-                        errors.productName
-                          ? "text-left border-none"
-                          : "text-left "
-                      }`}
-                      id="productName"
-                      type="productName"
-                      value={values.productName}
-                      name="productName"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="Nom du produit*"
-                      fullWidth
-                      size="small"
-                      error={Boolean(touched.productName && errors.productName)}
-                      endAdornment={
-                        <InputAdornment position="end">
-                          {touched.productName && errors.productName && (
-                            <FormHelperText
-                              className="z-50 border-none"
-                              error
-                              id="helper-text-productName"
-                            >
-                              {touched.productName &&
-                                errors.productName?.toString()}
-                            </FormHelperText>
-                          )}
-                        </InputAdornment>
-                      }
-                    />
-                    <DropdownColor />
-                  </div>
-                </Stack>
-              </form>
-            )}
-          </Formik>
-        </div>
-        <div className="w-[30%]">
-          <Stack spacing={1}>
-            <InputLabel>Pochette</InputLabel>
-            <Button
-              startIcon={<Upload />}
-              variant="outlined"
-              className="w-full"
-            >
-              Upload
-            </Button>
-          </Stack>
-        </div>
-      </Card>
+      <PlaylistForm
+        initialValues={initialValues}
+        isEditing={isEditing}
+        selectedColor={selectedColor}
+        pochetteUrl={pochetteUrl}
+        onColorSelect={handleColorSelect}
+        onFileSelected={handleFileSelected}
+        onSubmit={handleCreateOrUpdatePlaylist}
+        playlists={playlists}
+      />
 
       <div>
         <div className="flex gap-2">
@@ -190,7 +242,7 @@ export default function Home() {
           <div className="w-1/2 h-full p-2">
             <div className="pb-6">
               <Typography className="text-[18px] font-semibold">
-                Playlist en cours d'édition
+                Playlist en cours d&apos;édition
               </Typography>
               <Typography className="text-[14px] text-[#bebdc4]">
                 Durée Totale: 0:00{" "}
@@ -258,7 +310,7 @@ export default function Home() {
     // <Playlist />
     <>
       <div className="max-container h-full min-h-screen w-full flex items-center">
-        <div className="flex gap-2 w-full bg-zinc-200 rounded-md">
+        <div className="flex gap-2 w-full bg-zinc-200 rounded-md h-full">
           <div className="w-[72%] p-2 pt-4 rounded-md min-h-full h-[calc(100vh-340px)] flex flex-col gap-8">
             <div className="flex justify-between w-full items-center">
               <div className="space-y-1">
@@ -298,14 +350,24 @@ export default function Home() {
             </div>
             <div className="w-full overflow-x-auto">
               <div className="w-full min-w-max h-full py-2 gap-4 flex flex-nowrap">
-                {Array.from({ length: 18 }).map((_, index) => (
+                {playlists.map((playlist) => (
                   <Card
-                    key={index}
+                    key={playlist.id}
                     elevation={0}
-                    className="min-w-[190px] flex justify-center py-4 bg-zinc-100"
+                    className="min-w-[190px] h-auto flex justify-center py-4 bg-zinc-100"
                   >
                     <div className="flex flex-col gap-8">
-                      <div className="w-[164px] h-[164px] rounded-full bg-slate-500 flex justify-center items-center relative">
+                      <div
+                        className="w-[164px] h-[164px] min-h-[164px] min-w-[164px] rounded-full bg-slate-500 flex justify-center items-center relative"
+                        style={{
+                          backgroundImage: playlist?.pochetteUrl
+                            ? `url(${playlist.pochetteUrl})`
+                            : "none",
+                          backgroundSize: "cover",
+                          backgroundPosition: "center",
+                          backgroundRepeat: "no-repeat",
+                        }}
+                      >
                         <IconButton className="rounded-full w-16 h-16">
                           <PlayCircleIcon
                             color="secondary"
@@ -316,12 +378,14 @@ export default function Home() {
                           <SearchIcon color="primary" className="w-4 h-4" />
                         </IconButton>
                       </div>
+
                       <div className="flex gap-2 justify-center flex-col text-center">
                         <Typography className="text-[18px] font-semibold">
-                          Pop & Dance
+                          {playlist.name}
                         </Typography>
                         <Typography> Pop, Dance, Electro </Typography>
                       </div>
+
                       <Divider className="mx-auto w-[90%]" />
                       <div className="space-y-2">
                         <div className="flex justify-start items-center">
@@ -349,6 +413,7 @@ export default function Home() {
               </div>
             </div>
           </div>
+
           <div className="w-[28%] p-2 rounded-md pt-6 min-h-full h-[calc(100vh-280px)] flex flex-col gap-3">
             <Card elevation={0} className="w-full h-full pt-6 px-6">
               <Typography className="text-[18px] font-semibold">

@@ -8,21 +8,13 @@ import {
   deletePlaylist,
   uploadImage,
 } from "../../app/actions/playlist";
-import { Formik, Form } from "formik";
-import * as Yup from "yup";
-import {
-  Button,
-  Card,
-  Stack,
-  InputLabel,
-  OutlinedInput,
-  InputAdornment,
-  FormHelperText,
-} from "@mui/material";
-import DropdownColor from "../organisme/DropdownColor";
-import FileUpload from "../organisme/FileUpload";
+import { FormikHelpers } from "formik";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import PlaylistList from "./PlaylistList";
+import PlaylistForm from "./PlaylistForm";
 
-interface Playlist {
+export interface Playlist {
   id: number;
   name: string;
   color: string;
@@ -62,7 +54,10 @@ const PlaylistComponent = () => {
     setSelectedFile(file);
   };
 
-  const handleCreateOrUpdatePlaylist = async (values: any) => {
+  const handleCreateOrUpdatePlaylist = async (
+    values: any,
+    formikHelpers: FormikHelpers<any>
+  ) => {
     try {
       let imageUrl = pochetteUrl;
       if (selectedFile) {
@@ -95,12 +90,15 @@ const PlaylistComponent = () => {
           setPlaylists(
             playlists.map((p) => (p.id === isEditing ? response.playlist : p))
           );
+          toast.success("Playlist mise à jour avec succès!");
         } else {
           setPlaylists([...playlists, response.playlist]);
+          toast.success("Playlist créée avec succès!");
         }
         setIsEditing(null);
         setPochetteUrl(null);
         setSelectedFile(null);
+        formikHelpers.resetForm();
       } else {
         throw new Error(response.message);
       }
@@ -146,99 +144,26 @@ const PlaylistComponent = () => {
     name: "",
   };
 
-  const validationSchema = Yup.object().shape({
-    name: Yup.string().max(255).required("Obligatoire"),
-  });
-
   return (
     <div>
       <h1>Playlists</h1>
       {error && <p style={{ color: "red" }}>{error}</p>}
-      <ul>
-        {playlists.map((playlist) => (
-          <li key={playlist.id}>
-            <span>{playlist.name}</span>
-            <button onClick={() => handleEditPlaylist(playlist)}>
-              Modifier
-            </button>
-            <button onClick={() => handleDeletePlaylist(playlist.id)}>
-              Supprimer
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <Card className="w-full p-4 pb-4 flex items-center gap-4 border-t-2">
-        <div className="w-[60%]">
-          <Formik
-            enableReinitialize
-            initialValues={
-              isEditing
-                ? playlists.find((p) => p.id === isEditing) || initialValues
-                : initialValues
-            }
-            validationSchema={validationSchema}
-            onSubmit={async (values) => {
-              await handleCreateOrUpdatePlaylist(values);
-            }}
-          >
-            {({
-              errors,
-              handleBlur,
-              handleChange,
-              handleSubmit,
-              touched,
-              values,
-            }) => (
-              <Form className="w-full" noValidate onSubmit={handleSubmit}>
-                <Stack spacing={1}>
-                  <InputLabel>Nom de la playliste</InputLabel>
-                  <div className="flex gap-4">
-                    <OutlinedInput
-                      className={`font-poppins ${
-                        errors.name ? "text-left border-none" : "text-left "
-                      }`}
-                      id="name"
-                      type="text"
-                      value={values.name}
-                      name="name"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="Nom du produit*"
-                      fullWidth
-                      size="small"
-                      error={Boolean(touched.name && errors.name)}
-                      endAdornment={
-                        <InputAdornment position="end">
-                          {touched.name && errors.name && (
-                            <FormHelperText
-                              className="z-50 border-none"
-                              error
-                              id="helper-text-name"
-                            >
-                              {touched.name && errors.name?.toString()}
-                            </FormHelperText>
-                          )}
-                        </InputAdornment>
-                      }
-                    />
-                    <DropdownColor
-                      onColorSelect={handleColorSelect}
-                      selectedColor={selectedColor}
-                    />
-                  </div>
-                </Stack>
-                <Button type="submit" variant="contained">
-                  {isEditing ? "Modifier" : "Créer"}
-                </Button>
-              </Form>
-            )}
-          </Formik>
-        </div>
-        <div className="w-[30%]">
-          <FileUpload onFileSelected={handleFileSelected} />
-        </div>
-      </Card>
+      <ToastContainer />
+      <PlaylistList
+        playlists={playlists}
+        onEditPlaylist={handleEditPlaylist}
+        onDeletePlaylist={handleDeletePlaylist}
+      />
+      <PlaylistForm
+        initialValues={initialValues}
+        isEditing={isEditing}
+        selectedColor={selectedColor}
+        pochetteUrl={pochetteUrl}
+        onColorSelect={handleColorSelect}
+        onFileSelected={handleFileSelected}
+        onSubmit={handleCreateOrUpdatePlaylist}
+        playlists={playlists}
+      />
     </div>
   );
 };

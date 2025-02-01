@@ -38,7 +38,7 @@ export default function FileUpload({ onFileSelected }: FileUploadProps) {
   };
 
   return (
-    <Stack spacing={1}>
+    <Stack>
       <InputLabel>Pochette</InputLabel>
       <Box display="flex" alignItems="center" gap={2}>
         <input

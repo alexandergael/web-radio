@@ -31,45 +31,14 @@ import Tabulation, { Song } from "../components/tabs/tabs";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
-
-const songs = [
-  {
-    title: "Shape of You",
-    artist: "Ed Sheeran",
-    duration: "3:54",
-    tags: ["Pop", "Hit", "Été"],
-  },
-  {
-    title: "Blinding Lights",
-    artist: "The Weeknd",
-    duration: "3:20",
-    tags: ["Pop", "Danse"],
-  },
-  {
-    title: "Bad Guy",
-    artist: "Billie Eilish",
-    duration: "3:14",
-    tags: ["Alternatif", "Électro"],
-  },
-  {
-    title: "Stay With Me",
-    artist: "Sam Smith",
-    duration: "4:33",
-    tags: ["Pop", "Soul"],
-  },
-  {
-    title: "Stay With Me",
-    artist: "Sam Smith",
-    duration: "4:33",
-    tags: ["Pop", "Soul"],
-  },
-];
+import { songs } from "./data/data";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [checked, setChecked] = useState(true);
   const [open, setOpen] = React.useState(false);
-  const [songsList, setSongsList] = useState<Song[]>(songs); // Déplacé depuis Tabulation
+  const [songsList, setSongsList] = useState<Song[]>(songs);
+  const [songsListMesFichier, setSongsListMesFichier] = useState<Song[]>([]);
   const [playlistSongs, setPlaylistSongs] = useState<Song[]>([]);
   const [isDraggingOverPlaylist, setIsDraggingOverPlaylist] = useState(false);
 
@@ -78,6 +47,15 @@ export default function Home() {
     e.preventDefault();
     const index = parseInt(e.dataTransfer.getData("text/plain"));
     const draggedSong = songsList[index];
+    setPlaylistSongs([...playlistSongs, draggedSong]);
+    setIsDraggingOverPlaylist(false);
+  };
+  const handleDropInPlaylistMesFichier = (
+    e: React.DragEvent<HTMLDivElement>
+  ) => {
+    e.preventDefault();
+    const index = parseInt(e.dataTransfer.getData("text/plain"));
+    const draggedSong = songsListMesFichier[index];
     setPlaylistSongs([...playlistSongs, draggedSong]);
     setIsDraggingOverPlaylist(false);
   };
@@ -198,7 +176,12 @@ export default function Home() {
       <div>
         <div className="flex gap-2">
           <div className="w-1/2">
-            <Tabulation songsList={songsList} setSongsList={setSongsList} />
+            <Tabulation
+              songsList={songsList}
+              setSongsList={setSongsList}
+              songsListMesFichier={songsListMesFichier}
+              setSongsListMesFichier={setSongsListMesFichier}
+            />
           </div>
           <div className="w-1/2 h-full p-2">
             <div className="pb-6">

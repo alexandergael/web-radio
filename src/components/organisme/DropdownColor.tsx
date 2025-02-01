@@ -17,10 +17,14 @@ const colors = [
   "#817d7d",
 ];
 
-function DropdownColor() {
+interface DropdownColorProps {
+  onColorSelect: (color: string) => void;
+  selectedColor: string | null;
+}
+
+function DropdownColor({ onColorSelect, selectedColor }: DropdownColorProps) {
   const ref = useRef<any>(null);
   const [isOpen, setOpen] = useState<boolean>(false);
-  const [selectedColor, setSelectedColor] = useState<string | null>(null);
 
   const handleOpen = (): void => {
     setOpen(true);
@@ -31,7 +35,7 @@ function DropdownColor() {
   };
 
   const handleColorSelect = (color: string) => {
-    setSelectedColor(color);
+    onColorSelect(color);
     handleClose();
   };
 
@@ -43,10 +47,6 @@ function DropdownColor() {
         onClick={handleOpen}
         style={{ backgroundColor: selectedColor || "transparent" }}
       >
-        {/* <div
-          className="h-4 w-4 rounded-sm "
-          style={{ backgroundColor: selectedColor || "transparent" }}
-        /> */}
         <Typography>Couleur</Typography>
       </div>
       <Popover

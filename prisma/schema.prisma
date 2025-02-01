@@ -12,14 +12,12 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
-
-
 model Playlist {
   id          Int      @id @default(autoincrement())
   name        String
   color       String
   pochetteUrl String?
-  songs       Song[]   @relation("PlaylistToSongs")
+  songs       PlaylistSong[] @relation("PlaylistToPlaylistSong")
 }
 
 model Song {
@@ -29,12 +27,20 @@ model Song {
   songUrl     String
   duration    Int
   tags        Tag[]    @relation("SongToTags")
-  playlistId  Int?
-  playlist    Playlist? @relation("PlaylistToSongs", fields: [playlistId], references: [id])
+  playlists   PlaylistSong[] @relation("SongToPlaylistSong")
 }
 
 model Tag {
   id          Int      @id @default(autoincrement())
   name        String
   songs       Song[]   @relation("SongToTags")
+}
+
+model PlaylistSong {
+  playlistId Int
+  playlist   Playlist @relation("PlaylistToPlaylistSong", fields: [playlistId], references: [id])
+  songId     Int
+  song       Song     @relation("SongToPlaylistSong", fields: [songId], references: [id])
+
+  @@id([playlistId, songId])
 }

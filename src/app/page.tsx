@@ -32,6 +32,8 @@ import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { songs } from "./data/data";
+import Playlist from "../components/playlist/playlist";
+import PlaylistComponent from "../components/playlist/playlist";
 
 export default function Home() {
   const [searchTerm, setSearchTerm] = useState<string>("");
@@ -92,6 +94,8 @@ export default function Home() {
       <Typography className="text-[20px] font-semibold">
         Créer une playliste
       </Typography>
+
+      <PlaylistComponent />
 
       <Card className="w-full p-4 pb-4 flex items-center gap-4 border-t-2">
         <div className="w-[60%]">
@@ -251,6 +255,7 @@ export default function Home() {
   );
 
   return (
+    // <Playlist />
     <>
       <div className="max-container h-full min-h-screen w-full flex items-center">
         <div className="flex gap-2 w-full bg-zinc-200 rounded-md">

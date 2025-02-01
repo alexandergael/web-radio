@@ -9,6 +9,31 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
+  provider = "mysql"
   url      = env("DATABASE_URL")
+}
+
+model Playlist {
+  id          Int      @id @default(autoincrement())
+  name        String
+  color       String
+  pochetteUrl String?
+  songs       Song[]   @relation("PlaylistToSongs")
+}
+
+model Song {
+  id          Int      @id @default(autoincrement())
+  title       String
+  artist      String
+  songUrl     String
+  duration    Int
+  tags        Tag[]    @relation("SongToTags")
+  playlistId  Int?
+  playlist    Playlist? @relation("PlaylistToSongs", fields: [playlistId], references: [id])
+}
+
+model Tag {
+  id          Int      @id @default(autoincrement())
+  name        String
+  songs       Song[]   @relation("SongToTags")
 }

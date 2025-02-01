@@ -42,7 +42,7 @@ function DropdownColor({ onColorSelect, selectedColor }: DropdownColorProps) {
   return (
     <>
       <div
-        className="flex items-center justify-center flex-grow gap-2 cursor-pointer border border-gray-200 px-1 py-[6px] rounded-md "
+        className="flex items-center justify-center flex-grow gap-2 cursor-pointer w-full border border-gray-200 px-1 py-[8px] rounded-md"
         ref={ref}
         onClick={handleOpen}
         style={{ backgroundColor: selectedColor || "transparent" }}

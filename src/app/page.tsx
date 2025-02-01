@@ -5,14 +5,10 @@ import {
   Card,
   Checkbox,
   Divider,
-  FormHelperText,
   IconButton,
   InputAdornment,
-  InputLabel,
-  OutlinedInput,
   Paper,
   Slider,
-  Stack,
   TextField,
   Typography,
 } from "@mui/material";
@@ -27,7 +23,6 @@ import PieChartWithCenterLabel from "../components/chart/chart";
 import { FormikHelpers } from "formik";
 import Tabulation, { Song } from "../components/tabs/tabs";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
-import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { songs } from "./data/data";
 import {
@@ -294,12 +289,6 @@ export default function Home() {
             </div>
           </div>
         </div>
-        <div className="flex justify-end">
-          <Button startIcon={<SaveIcon />} variant="contained">
-            {" "}
-            Enregistrer la playlist
-          </Button>
-        </div>
       </div>
     </div>
   );
@@ -309,7 +298,7 @@ export default function Home() {
     <>
       <ToastContainer />
       <div className="max-container h-full min-h-screen w-full flex items-center">
-        <div className="flex gap-2 w-full bg-zinc-200 rounded-md h-full">
+        <div className="flex gap-2 w-full bg-zinc-200 rounded-md">
           <div className="w-[72%] p-2 pt-4 rounded-md min-h-full h-[calc(100vh-340px)] flex flex-col gap-8">
             <div className="flex justify-between w-full items-center">
               <div className="space-y-1">
@@ -425,7 +414,6 @@ export default function Home() {
                 </Typography>
                 <Slider
                   size="medium"
-                  // defaultValue={70}
                   aria-label="Small"
                   valueLabelDisplay="off"
                 />

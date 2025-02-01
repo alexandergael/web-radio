@@ -38,8 +38,8 @@ export default function FileUpload({ onFileSelected }: FileUploadProps) {
   };
 
   return (
-    <Stack>
-      <InputLabel>Pochette</InputLabel>
+    <Stack spacing={1}>
+      <InputLabel>Pochette</InputLabel>{" "}
       <Box display="flex" alignItems="center" gap={2}>
         <input
           type="file"
@@ -60,8 +60,8 @@ export default function FileUpload({ onFileSelected }: FileUploadProps) {
           <Image
             src={previewUrl}
             alt="Preview"
-            width={50}
-            height={50}
+            width={40}
+            height={40}
             style={{
               borderRadius: "4px",
             }}

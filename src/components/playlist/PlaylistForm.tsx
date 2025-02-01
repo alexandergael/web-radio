@@ -15,7 +15,8 @@ import {
 } from "@mui/material";
 import DropdownColor from "../organisme/DropdownColor";
 import FileUpload from "../organisme/FileUpload";
-import { Playlist } from "./playlist";
+import { Playlist } from "../../app/page";
+import SaveIcon from "@mui/icons-material/Save";
 
 interface PlaylistFormProps {
   initialValues: { name: string };
@@ -42,8 +43,8 @@ const PlaylistForm: React.FC<PlaylistFormProps> = ({
   });
 
   return (
-    <Card className="w-full p-4 pb-4 flex items-center gap-4 border-t-2">
-      <div className="w-[60%]">
+    <Card className=" w-full p-4 pb-4 flex items-center gap-4 border-t-2">
+      <div className="w-full">
         <Formik
           enableReinitialize
           initialValues={
@@ -63,54 +64,68 @@ const PlaylistForm: React.FC<PlaylistFormProps> = ({
             values,
           }) => (
             <Form className="w-full" noValidate onSubmit={handleSubmit}>
-              <Stack spacing={1}>
-                <Box display="flex" gap={2} alignItems="center">
-                  <Box>
+              <div className="w-full flex gap-4">
+                <div className="w-[60%]">
+                  <Stack className="w-full" spacing={1}>
                     <InputLabel>Nom de la playliste</InputLabel>
-                    <OutlinedInput
-                      className={`font-poppins ${
-                        errors.name ? "text-left border-none" : "text-left "
-                      }`}
-                      id="name"
-                      type="text"
-                      value={values.name}
-                      name="name"
-                      onBlur={handleBlur}
-                      onChange={handleChange}
-                      placeholder="Nom du produit*"
-                      fullWidth
-                      size="small"
-                      error={Boolean(touched.name && errors.name)}
-                      endAdornment={
-                        <InputAdornment position="end">
-                          {touched.name && errors.name && (
-                            <FormHelperText
-                              className="z-50 border-none"
-                              error
-                              id="helper-text-name"
-                            >
-                              {touched.name && errors.name?.toString()}
-                            </FormHelperText>
-                          )}
-                        </InputAdornment>
-                      }
-                    />
-                  </Box>
-                  <Box width={"20%"}>
-                    <InputLabel>Couleur</InputLabel>
-                    <DropdownColor
-                      onColorSelect={onColorSelect}
-                      selectedColor={selectedColor}
-                    />
-                  </Box>
-                  <Box width={"30%"}>
-                    <FileUpload onFileSelected={onFileSelected} />
-                  </Box>
-                  <Button type="submit" variant="contained">
-                    {isEditing ? "Modifier" : "Créer"}
-                  </Button>
-                </Box>
-              </Stack>
+                    <div className="flex gap-4 w-full">
+                      <OutlinedInput
+                        className={`font-poppins ${
+                          errors.name ? "text-left border-none" : "text-left "
+                        }`}
+                        id="name"
+                        type="text"
+                        value={values.name}
+                        name="name"
+                        onBlur={handleBlur}
+                        onChange={handleChange}
+                        placeholder="Nom*"
+                        fullWidth
+                        size="small"
+                        error={Boolean(touched.name && errors.name)}
+                        endAdornment={
+                          <InputAdornment position="end">
+                            {touched.name && errors.name && (
+                              <FormHelperText
+                                className="z-50 border-none"
+                                error
+                                id="helper-text-name"
+                              >
+                                {touched.name && errors.name?.toString()}
+                              </FormHelperText>
+                            )}
+                          </InputAdornment>
+                        }
+                      />
+                      <div className="w-[20%]">
+                        <DropdownColor
+                          onColorSelect={onColorSelect}
+                          selectedColor={selectedColor}
+                        />
+                      </div>
+                    </div>
+                  </Stack>
+                </div>
+
+                <div className="w-[20%]">
+                  <FileUpload onFileSelected={onFileSelected} />
+                </div>
+                <div className="w-[20%]">
+                  <Stack spacing={1}>
+                    <InputLabel className=""> _</InputLabel>
+                    <Button
+                      startIcon={<SaveIcon />}
+                      className="w-full"
+                      type="submit"
+                      variant="contained"
+                    >
+                      {isEditing
+                        ? "Modifier la playlist"
+                        : "Enregistrer la playlist"}
+                    </Button>
+                  </Stack>
+                </div>
+              </div>
             </Form>
           )}
         </Formik>

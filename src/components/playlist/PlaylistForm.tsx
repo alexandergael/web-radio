@@ -106,11 +106,11 @@ const PlaylistForm: React.FC<PlaylistFormProps> = ({
                   <Box width={"30%"}>
                     <FileUpload onFileSelected={onFileSelected} />
                   </Box>
+                  <Button type="submit" variant="contained">
+                    {isEditing ? "Modifier" : "Créer"}
+                  </Button>
                 </Box>
               </Stack>
-              <Button type="submit" variant="contained">
-                {isEditing ? "Modifier" : "Créer"}
-              </Button>
             </Form>
           )}
         </Formik>

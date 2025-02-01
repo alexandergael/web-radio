@@ -20,19 +20,16 @@ import AddTwoToneIcon from "@mui/icons-material/AddTwoTone";
 import SearchIcon from "@mui/icons-material/Search";
 import { ChangeEvent, useState } from "react";
 import PlayCircleIcon from "@mui/icons-material/PlayCircle";
-import { ArrowForward, Cancel, Upload } from "@mui/icons-material";
+import { ArrowForward, Cancel } from "@mui/icons-material";
 import Drawer from "@mui/material/Drawer";
 import * as React from "react";
 import PieChartWithCenterLabel from "../components/chart/chart";
-import * as Yup from "yup";
-import { Formik, FormikHelpers } from "formik";
-import DropdownColor from "../components/organisme/DropdownColor";
+import { FormikHelpers } from "formik";
 import Tabulation, { Song } from "../components/tabs/tabs";
 import QueueMusicIcon from "@mui/icons-material/QueueMusic";
 import SaveIcon from "@mui/icons-material/Save";
 import DeleteIcon from "@mui/icons-material/Delete";
 import { songs } from "./data/data";
-import PlaylistComponent from "../components/playlist/playlist";
 import {
   createPlaylist,
   deletePlaylist,
@@ -40,8 +37,9 @@ import {
   updatePlaylist,
   uploadImage,
 } from "./actions/playlist";
-import { toast } from "react-toastify";
 import PlaylistForm from "../components/playlist/PlaylistForm";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 export interface Playlist {
   id: number;
   name: string;
@@ -309,6 +307,7 @@ export default function Home() {
   return (
     // <Playlist />
     <>
+      <ToastContainer />
       <div className="max-container h-full min-h-screen w-full flex items-center">
         <div className="flex gap-2 w-full bg-zinc-200 rounded-md h-full">
           <div className="w-[72%] p-2 pt-4 rounded-md min-h-full h-[calc(100vh-340px)] flex flex-col gap-8">
